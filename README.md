@@ -1,11 +1,11 @@
 # NextNowBackEnd
 Backend for NextNow project.Versus Virus Hackathon 
 
-###Requirements 
+### Requirements 
 - NodeJS and NPM: https://nodejs.org/en/download/ 
 - MySQL database
 
-###How to run
+### How to run
 - Use `npm install` to install all the dependencies
 - Add a `.env` file with the following entries:  
     MYSQL_USER=\<database user name>  
@@ -17,7 +17,7 @@ Backend for NextNow project.Versus Virus Hackathon
 - `npm start dev` to run the server in development mode
 
 
-###How to contribute:
+### How to contribute:
 - Create a new branch from master with the name of the feature: `git checkout -b <feauture_name>`
 - When done, add your changes with `git add <filename>`
 - Commit your changes with `git commit` and add a description of your changes
