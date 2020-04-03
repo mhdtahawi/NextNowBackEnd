@@ -8,11 +8,6 @@ import { isEmptyObject } from '../utils/util';
 class UserService {
   public users = userModel;
 
-  public async findAllUser(): Promise<User[]> {
-    const users: User[] = await this.users.findAll();
-    return users;
-  }
-
   public async findUserById(userId: number): Promise<User> {
     const findUser: User = await this.users.findByPk(userId);
     if (!findUser) throw new HttpException(409, "You're not user");
