@@ -1,0 +1,7 @@
+#User:
+  allOf:
+  - $ref: './CreateUser.yaml'
+  - type: object
+    properties:
+      id:
+        type: integer

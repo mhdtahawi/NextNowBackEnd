@@ -1,0 +1,11 @@
+schemas:
+  User:
+    $ref: './user/User.yaml'
+  CreateUser:
+    $ref: './user/CreateUser.yaml'
+
+securitySchemes:
+  ApiJWTAuth:        # arbitrary name for the security scheme
+    type: apiKey
+    in: header       # can be "header", "query" or "cookie"
+    name: X-JWT-AUTH # name of the header, query parameter or cookie

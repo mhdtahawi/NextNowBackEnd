@@ -14,9 +14,10 @@ Backend for NextNow project.Versus Virus Hackathon
     MYSQL_DATABASE=\<database name>  
     JWT_SECRET=\<and random string would work>  
     PORT=\<port for the server to run. e.g. 3000>
+- Create api documentation `swagger-cli bundle --type yaml apidoc/index.yaml > swagger.yaml` 
 - `npm start dev` to run the server in development mode
-
-
+- Swagger api doc is available at /api/v0/api-docs
+ 
 ### How to contribute:
 - Create a new branch from master with the name of the feature: `git checkout -b <feauture_name>`
 - When done, add your changes with `git add <filename>`
