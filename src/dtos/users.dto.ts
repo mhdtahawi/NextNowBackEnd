@@ -10,3 +10,16 @@ export class CreateUserDto {
   @IsString()
   public username: string;
 }
+
+export class CreatedUser {
+  public id: Number;
+
+  @IsEmail()
+  public email: string;
+
+  @IsString()
+  public walletId: string;
+
+  @IsString()
+  public username: string;
+}
