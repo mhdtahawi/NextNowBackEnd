@@ -1,25 +1,18 @@
 import { NextFunction, Request, Response } from 'express';
-import { CreateUserDto } from '../dtos/users.dto';
+import {CreatedUser, CreateUserDto} from '../dtos/users.dto';
 import { User } from '../interfaces/users.interface';
-import userService from '../services/users.service';
+import UserService from '../services/users.service';
+import BlockchainService from "../services/blockchain.service";
 
 class UsersController {
-  public userService = new userService();
-
-  public getUsers = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const findAllUsersData: User[] = await this.userService.findAllUser();
-      res.status(200).json({ data: findAllUsersData, message: 'findAll' });
-    } catch (error) {
-      next(error);
-    }
-  }
+  public userService = new UserService();
+  public blockchainService = new BlockchainService();
 
   public getUserById = async (req: Request, res: Response, next: NextFunction) => {
     const userId: number = Number(req.params.id);
 
     try {
-      const findOneUserData: User = await this.userService.findUserById(userId);
+      const findOneUserData: CreatedUser = await this.userService.findUserById(userId);
       res.status(200).json({ data: findOneUserData, message: 'findOne' });
     } catch (error) {
       next(error);
@@ -30,7 +23,8 @@ class UsersController {
     const userData: CreateUserDto = req.body;
 
     try {
-      const createUserData: User = await this.userService.createUser(userData);
+      const wallet = await this.blockchainService.createWallet();
+      const createUserData: CreatedUser = await this.userService.createUser(userData, wallet);
       res.status(201).json({ data: createUserData, message: 'created' });
     } catch (error) {
       next(error);
@@ -42,7 +36,7 @@ class UsersController {
     const userData: User = req.body;
 
     try {
-      const updateUserData: User = await this.userService.updateUser(userId, userData);
+      const updateUserData: CreatedUser = await this.userService.updateUser(userId, userData);
       res.status(200).json({ data: updateUserData, message: 'updated' });
     } catch (error) {
       next(error);
@@ -53,8 +47,8 @@ class UsersController {
     const userId: number = Number(req.params.id);
 
     try {
-      const deleteUserData: User = await this.userService.deleteUserData(userId);
-      res.status(200).json({ data: deleteUserData, message: 'deleted' });
+      await this.userService.deleteUserData(userId);
+      res.status(200).json({ message: 'deleted' });
     } catch (error) {
       next(error);
     }

@@ -1,0 +1,13 @@
+post:
+  tags:
+  - Users
+  summary: New user signup
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../../definitions/user/CreateUser.yaml'
+  responses:
+    '201':
+      description: Created

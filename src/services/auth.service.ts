@@ -1,49 +1,29 @@
 import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
-import { CreateUserDto } from '../dtos/users.dto';
+import {CreatedUser, CreateUserDto} from '../dtos/users.dto';
 import HttpException from '../exceptions/HttpException';
-import { DataStoredInToken, TokenData } from '../interfaces/auth.interface';
-import { User } from '../interfaces/users.interface';
-import userModel from '../models/users.model';
-import { isEmptyObject } from '../utils/util';
+import {DataStoredInToken, TokenData} from '../interfaces/auth.interface';
+import {User} from '../interfaces/users.interface';
+import {isEmptyObject} from '../utils/util';
+import UserStore from "../stores/users.store";
+import UserService from "./users.service";
 
 class AuthService {
-  public users = userModel;
 
-  public async signup(userData: CreateUserDto): Promise<User> {
+  public userStore = new UserStore();
+
+  public async login(userData: CreateUserDto): Promise<{ token: TokenData, user: CreatedUser }> {
     if (isEmptyObject(userData)) throw new HttpException(400, "You're not userData");
 
-    const findUser: User = await this.users.findOne({ where: { email: userData.email } });
-    if (findUser) throw new HttpException(409, `You're email ${userData.email} already exists`);
-
-    const hashedPassword = await bcrypt.hash(userData.password, 10);
-    const createUserData: User = await this.users.create({ ...userData, password: hashedPassword });
-
-    return createUserData;
-  }
-
-  public async login(userData: CreateUserDto): Promise<{ cookie: string, findUser: User }> {
-    if (isEmptyObject(userData)) throw new HttpException(400, "You're not userData");
-
-    const findUser: User = await this.users.findOne({ where: { email: userData.email } });
+    const findUser: User = await this.userStore.findUserByEmailOrUsername( userData.email, userData.username);
     if (!findUser) throw new HttpException(409, `You're email ${userData.email} not found`);
 
     const isPasswordMatching: boolean = await bcrypt.compare(userData.password, findUser.password);
     if (!isPasswordMatching) throw new HttpException(409, "You're password not matching");
 
-    const tokenData = this.createToken(findUser);
-    const cookie = this.createCookie(tokenData);
-
-    return { cookie, findUser };
-  }
-
-  public async logout(userData: User): Promise<User> {
-    if (isEmptyObject(userData)) throw new HttpException(400, "You're not userData");
-
-    const findUser: User = await this.users.findOne({ where: { password: userData.password } });
-    if (!findUser) throw new HttpException(409, "You're not user");
-
-    return findUser;
+    const token = this.createToken(findUser);
+    const user:CreatedUser = UserService.extractUserWithoutPassword(findUser);
+    return { token,  user };
   }
 
   public createToken(user: User): TokenData {

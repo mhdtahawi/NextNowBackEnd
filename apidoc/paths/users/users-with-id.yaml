@@ -1,0 +1,49 @@
+get:
+  tags:
+  - Users
+  summary: Get user info
+  parameters:
+  - in: path
+    name: id
+    type: int
+    required: true
+  responses:
+    '200':
+      content:
+        application/json:
+          schema:
+            type: object
+            items:
+              $ref: '../../definitions/user/User.yaml'
+    '400':
+      description: bad input parameter
+put:
+  tags:
+    - Users
+  summary: Update user info
+  parameters:
+    - in: path
+      name: id
+      type: int
+      required: true
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../../definitions/user/CreateUser.yaml'
+  responses:
+    '201':
+      description: Updated
+delete:
+  tags:
+    - Users
+  summary: delete user info
+  parameters:
+    - in: path
+      name: id
+      type: int
+      required: true
+  responses:
+    '201':
+      description: deleted

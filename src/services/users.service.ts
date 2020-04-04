@@ -1,52 +1,51 @@
 import * as bcrypt from 'bcrypt';
-import { CreateUserDto } from '../dtos/users.dto';
+import {CreatedUser, CreateUserDto} from '../dtos/users.dto';
 import HttpException from '../exceptions/HttpException';
-import { User } from '../interfaces/users.interface';
-import userModel from '../models/users.model';
-import { isEmptyObject } from '../utils/util';
+import {User} from '../interfaces/users.interface';
+import {isEmptyObject} from '../utils/util';
+import UsersStore from "../stores/users.store";
 
 class UserService {
-  public users = userModel;
+  public usersStore = new UsersStore();
 
-  public async findAllUser(): Promise<User[]> {
-    const users: User[] = await this.users.findAll();
-    return users;
+  public static extractUserWithoutPassword(user: User): CreatedUser
+  {
+    const {password, ...createdUser} = user;
+    return createdUser;
   }
 
-  public async findUserById(userId: number): Promise<User> {
-    const findUser: User = await this.users.findByPk(userId);
+  public async findUserById(userId: number): Promise<CreatedUser> {
+    const findUser: User = await this.usersStore.findUserById(userId);
     if (!findUser) throw new HttpException(409, "You're not user");
 
-    return findUser;
+    return UserService.extractUserWithoutPassword(findUser);
   }
 
-  public async createUser(userData: CreateUserDto): Promise<User> {
+  public async createUser(userData: CreateUserDto, wallet: string): Promise<CreatedUser> {
     if (isEmptyObject(userData)) throw new HttpException(400, "You're not userData");
 
-    const findUser: User = await this.users.findOne({ where: { email: userData.email } });
-    if (findUser) throw new HttpException(409, `You're email ${userData.email} already exists`);
+    const findUser: User = await this.usersStore.findUserByEmailOrUsername(userData.email, userData.username);
+    if (findUser && findUser.email === userData.email) throw new HttpException(409, `Your email ${userData.email} already exists`);
+    if (findUser && findUser.username === userData.username) throw new HttpException(409, `Your username ${userData.username} already exists`);
 
     const hashedPassword = await bcrypt.hash(userData.password, 10);
-    const createUserData: User = await this.users.create({ ...userData, password: hashedPassword });
-
-    return createUserData;
+    const createUserData: User = await this.usersStore.createNewUser({ ...userData, password: hashedPassword, walletId: wallet});
+    return UserService.extractUserWithoutPassword(createUserData);
   }
 
-  public async updateUser(userId: number, userData: User): Promise<User> {
+  public async updateUser(userId: number, userData: User): Promise<CreatedUser> {
     if (isEmptyObject(userData)) throw new HttpException(400, "You're not userData");
 
     const hashedPassword = await bcrypt.hash(userData.password, 10);
-    const updateUser: User = await this.users.update({ ...userData, password: hashedPassword }, { where: { id: userId } });
+    const updateUser: User = await this.usersStore.updateUser({ ...userData, password: hashedPassword }, userId);
     if (!updateUser) throw new HttpException(409, "You're not user");
 
-    return updateUser;
+   return UserService.extractUserWithoutPassword(updateUser);
   }
 
-  public async deleteUserData(userId: number): Promise<User> {
-    const deleteUser: User = await this.users.destroy({ where: { id: userId } });
-    if (!deleteUser) throw new HttpException(409, "You're not user");
-
-    return deleteUser;
+  public async deleteUserData(userId: number): Promise<void> {
+    await this.usersStore.removeUser(userId);
+    return;
   }
 }
 
